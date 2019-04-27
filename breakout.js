@@ -79,14 +79,10 @@ function create () {
 
     ball.setBounce(1); // ball bounces off bar
 
-    // bar shouldn't be impacted if it hits world bounds
-    bar.setBounce(0);
-    bar.setCollideWorldBounds(true);
     // bar shouldn't fall down after collision with ball
     bar.body.customSeparateX = true;
     bar.body.customSeparateY = true;
     
-
     //ball vs bricks_group (necessary for ball vs brick)
     this.physics.add.collider(ball,bricks_group);
 
@@ -115,21 +111,18 @@ function create () {
     game.canvas.addEventListener('mousedown',function() {
 	game.input.mouse.requestPointerLock();
     });
-    /*
-    let bar_y = bar.body.y;    
-    this.input.on('pointermove',(pointer,_) => {	
-	bar.setPosition(pointer.x,bar_y);
-	this.physics.world.updateMotion(bar.body,1);
-    });
-    */
+
     let bar_y = bar.body.y;    
     this.input.on('pointermove',(pointer,_) => {	
 	if(this.input.mouse.locked) {
-	    bar.body.x += pointer.movementX;
-	    console.log(bar.body.x,pointer.movementX);
-	    bar.setPosition(bar.body.x,bar_y);
-	    console.log('set:',bar.body.x,bar_y);
-	    //this.physics.world.updateMotion(bar.body,1);
+	    bar.x += pointer.movementX;
+	    let hw = bar.body.width / 2;
+	    if(bar.x < hw) {
+		bar.x = hw;
+	    }
+	    if(bar.x > config.width-hw) {
+		bar.x = config.width-hw;
+	    }
 	}
     },this);
 }
