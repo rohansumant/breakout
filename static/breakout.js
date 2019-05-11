@@ -16,9 +16,9 @@ var game = new Phaser.Game(config);
 var bricks_group, bar, ball, clocktext, time = 0;
 
 function preload () {
-    this.load.image('bar', 'assets/bar.png');
-    this.load.image('brick', 'assets/brick.png');
-    this.load.image('ball', 'assets/ball.png');
+    this.load.image('bar', 'static/assets/bar.png');
+    this.load.image('brick', 'static/assets/brick.png');
+    this.load.image('ball', 'static/assets/ball.png');
 }
 
 function render_bricks(self) {
@@ -153,3 +153,4 @@ function create () {
 
 function update() {
 }
+
