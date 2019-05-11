@@ -1,7 +1,7 @@
 var config = {
     type: Phaser.AUTO,
-    width: 800,
-    height: 600,
+    width: 400,
+    height: 300,
     physics: {
         default: 'arcade'
     },
@@ -13,7 +13,7 @@ var config = {
 };
 
 var game = new Phaser.Game(config);
-var bricks_group, bar, ball;
+var bricks_group, bar, ball, clocktext, time = 0;
 
 function preload () {
     this.load.image('bar', 'assets/bar.png');
@@ -23,7 +23,7 @@ function preload () {
 
 function render_bricks(self) {
     bricks_group = self.physics.add.staticGroup();
-    var brick_rows = 6, brick_cols = 22, margin = 50;
+    var brick_rows = 3, brick_cols = 10, margin = 50;
     var x = margin, y = 1.5*margin;
     for(var i = 0; i < brick_rows; i++) {
 	for(var j = 0; j < brick_cols; j++) {
@@ -38,8 +38,8 @@ function render_bricks(self) {
 }
 
 function render_bar_and_ball(self) {
-    bar = self.physics.add.sprite(400,550,'bar');
-    ball = self.physics.add.sprite(400,500,'ball');
+    bar = self.physics.add.sprite(200,250,'bar');
+    ball = self.physics.add.sprite(200,200,'ball');
     ball.name = "ball";
 }
 
@@ -62,18 +62,23 @@ function bar_ball_collide(self) {
     ball.body.setVelocity(speed*Math.cos(angle),-speed*Math.sin(angle));
 }
 
+function pauseGame(self) {
+    self.physics.pause();
+    self.time.removeAllEvents();
+}
+
 function create () {
     render_bricks(this,bricks_group);
     render_bar_and_ball(this,bar,ball);
-    ball.setVelocity(0,-300);
+    ball.setVelocity(0,-150);
 
     //The ball must collide with world boundries. If it hits the bottom, game over!'
     ball.setCollideWorldBounds(true);
     ball.body.onWorldBounds = true;
     this.physics.world.on('worldbounds',(body,up,down,left,right) => {
 	if(body.gameObject.name === 'ball' && down) {
-	    this.physics.pause();
-	    console.log('Game over!');
+	    pauseGame(this);
+	    alert('Game over! You lose :(');
 	}
     });
 
@@ -102,8 +107,13 @@ function create () {
 	} else if(go2.name === 'ball' && go1.name === 'brick') {
 	    ball = go2; brick = go1;
 	} else return;
-	brick.body.destroy();
-	brick.visible = false;
+	bricks_group.remove(brick,true,true);
+	let active = bricks_group.countActive();
+	if(active === 0) {
+	    // All breaks have been destroyed, the user wins.
+	    pauseGame(this);
+	    alert('You win!');
+	}
     });
 
 
@@ -116,6 +126,8 @@ function create () {
     this.input.on('pointermove',(pointer,_) => {	
 	if(this.input.mouse.locked) {
 	    bar.x += pointer.movementX;
+
+	    //ensure that bar doesn't go out of screen
 	    let hw = bar.body.width / 2;
 	    if(bar.x < hw) {
 		bar.x = hw;
@@ -125,6 +137,18 @@ function create () {
 	    }
 	}
     },this);
+
+
+    // Timer at the top left corner
+    
+    clocktext = this.add.text(10,10,'Time: '+time++,{fontsize: '10px', fill: '#fff'});
+    this.time.addEvent({
+	delay: 1000,
+	repeat: -1,
+	callback: function() {
+	    clocktext.setText('Time: '+time++);
+	}});
+    
 }
 
 function update() {
